@@ -5,13 +5,12 @@ Precompiled Tcpdump binaries for Android are provided for ARM, ARM64, X86, X86-6
 ```
 Tcpdump version: 4.9.2
 Libpcap version: 1.9.0
-Android API: 23
-NDK: android-ndk-r18b
+Default android API: 23
 ```
 
 ## Compilation Steps
 
-1. Download the Android NDK from https://developer.android.com/ndk/downloads/. The latest available at the time of writing is `ndk-r18b`.
+1. Download the Android NDK from https://developer.android.com/ndk/downloads/.
     Extract the zip to a suitable location.
 
     ```
@@ -27,10 +26,10 @@ NDK: android-ndk-r18b
 
 3. For compiling, set `NDK` to the location of the android sdk directory and run the corresponding build script.
     ```
-    $ NDK=/home/ubuntu/workspace/android-ndk-r18b/ ./build_x86.sh
-    $ NDK=/home/ubuntu/workspace/android-ndk-r18b/ ./build_x86_64.sh
-    $ NDK=/home/ubuntu/workspace/android-ndk-r18b/ ./build_arm.sh
-    $ NDK=/home/ubuntu/workspace/android-ndk-r18b/ ./build_arm64.sh
+    $ NDK=/home/ubuntu/workspace/android-ndk-rxxx/ ./build_x86.sh
+    $ NDK=/home/ubuntu/workspace/android-ndk-rxxx/ ./build_x86_64.sh
+    $ NDK=/home/ubuntu/workspace/android-ndk-rxxx/ ./build_arm.sh
+    $ NDK=/home/ubuntu/workspace/android-ndk-rxxx/ ./build_arm64.sh
     ```
 
 4. Compiled binaries will be located in the corresponding `tcpdumpbuild` directory.
