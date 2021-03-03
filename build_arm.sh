@@ -3,9 +3,8 @@
 tcpdump_ver=4.9.2
 libpcap_ver=1.9.0
 android_api_def=23
-toolchain_arch=arm
-toolchain_dir=toolchain_arm
-ndk_dir_def=android-ndk-r18b
+toolchain_arch=armv7a
+toolchain_dir=toolchain_armv7a
 
 #-------------------------------------------------------#
 
@@ -13,11 +12,21 @@ tcpdump_dir=tcpdump-${tcpdump_ver}
 libpcap_dir=libpcap-${libpcap_ver}
 
 
+exit_error()
+{
+    echo " _______"
+    echo "|       |"
+    echo "| ERROR |"
+    echo "|_______|"
+    exit 1
+}
+
 if [ ${NDK} ]
 then
     ndk_dir=${NDK}
 else
-    ndk_dir=${ndk_dir_def}
+    echo Please specify NDK path
+    exit_error
 fi
 
 ndk_dir=`readlink -f ${ndk_dir}`
@@ -34,16 +43,6 @@ echo ""
 echo "NDK - ${ndk_dir}"
 echo "Android API: ${android_api}"
 echo "_______________________"
-
-
-exit_error()
-{
-    echo " _______"
-    echo "|       |"
-    echo "| ERROR |"
-    echo "|_______|"
-    exit 1
-}
 
 {
     if [ $# -ne 0 ]
@@ -69,38 +68,22 @@ exit_error()
     echo "| TOOLCHAIN          |"
     echo "|____________________|"
 
-    if [ -d "$toolchain_dir" ]
-    then
-        echo Toolchain already exist! Nothing to do.
-    else
-        echo Creating toolchain...
-        mkdir $toolchain_dir
-        python ${ndk_dir}/build/tools/make_standalone_toolchain.py \
-            --arch=${toolchain_arch} \
-            --api=${android_api} \
-            --install-dir=${toolchain_dir} \
-            --force
-        
-        if [ $? -ne 0 ]
-        then
-            rm -fr $toolchain_dir
-            exit_error
-        fi
-    fi
+    toolchain_dir=$ndk_dir/toolchains/llvm/prebuilt/linux-x86_64
+    export sysroot=$toolchain_dir/sysroot
+    export PATH=$toolchain_dir/bin:$PATH
     
-    export PATH=`pwd`/$toolchain_dir/bin:$PATH
-
-    target_host=arm-linux-androideabi
-    export AR=$target_host-ar
-    export AS=$target_host-clang
-    export CC=$target_host-clang
-    export CXX=$target_host-clang++
+    target_host=armv7a-linux-androideabi
+    target_host_with_api=$target_host$android_api
+    export AR=llvm-ar
+    export AS=$target_host_with_api-clang
+    export CC=$target_host_with_api-clang
+    export CXX=$target_host_with_api-clang++
     export LD=$target_host-ld
     export STRIP=$target_host-strip
-    export RANLIB=$target_host-ranlib
+    export RANLIB=arm-linux-androideabi-ranlib
     export STRIP=$target_host-strip
-    export CFLAGS="-static -O2 -fPIE -fPIC -march=armv7-a -mthumb -mfloat-abi=softfp -mfpu=vfpv3-d16 -mfpu=neon"
-    export LDFLAGS="-pie"
+    export CFLAGS="-static -O2 -fPIE -fPIC -march=armv7-a -mthumb -mfloat-abi=softfp -mfpu=vfpv3-d16 -mfpu=neon --sysroot=$sysroot"
+    export LDFLAGS="-pie --sysroot=$sysroot"
 }
 
 # download & untar libpcap + tcpdump
@@ -166,7 +149,7 @@ exit_error()
     echo "|_____________________|"
     
     chmod +x configure
-    ./configure --host=arm-linux-androideabi --with-pcap=linux
+    ./configure --host=armv7a-linux-androideabi --with-pcap=linux
 
     if [ $? -ne 0 ]
     then
@@ -199,7 +182,7 @@ exit_error()
     echo "|_____________________|"
     
     chmod +x configure
-    ./configure --host=arm-linux-androideabi --with-pcap=linux
+    ./configure --host=armv7a-linux-androideabi --with-pcap=linux
 
     if [ $? -ne 0 ]
     then

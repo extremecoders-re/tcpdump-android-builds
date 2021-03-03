@@ -5,7 +5,6 @@ libpcap_ver=1.9.0
 android_api_def=23
 toolchain_arch=x86
 toolchain_dir=toolchain_x86
-ndk_dir_def=android-ndk-r18b
 
 #-------------------------------------------------------#
 
@@ -13,11 +12,21 @@ tcpdump_dir=tcpdump-${tcpdump_ver}
 libpcap_dir=libpcap-${libpcap_ver}
 
 
+exit_error()
+{
+    echo " _______"
+    echo "|       |"
+    echo "| ERROR |"
+    echo "|_______|"
+    exit 1
+}
+
 if [ ${NDK} ]
 then
     ndk_dir=${NDK}
 else
-    ndk_dir=${ndk_dir_def}
+    echo Please specify NDK path
+    exit_error
 fi
 
 ndk_dir=`readlink -f ${ndk_dir}`
@@ -34,16 +43,6 @@ echo ""
 echo "NDK - ${ndk_dir}"
 echo "Android API: ${android_api}"
 echo "_______________________"
-
-
-exit_error()
-{
-    echo " _______"
-    echo "|       |"
-    echo "| ERROR |"
-    echo "|_______|"
-    exit 1
-}
 
 {
     if [ $# -ne 0 ]
@@ -69,38 +68,22 @@ exit_error()
     echo "| TOOLCHAIN          |"
     echo "|____________________|"
 
-    if [ -d "$toolchain_dir" ]
-    then
-        echo Toolchain already exist! Nothing to do.
-    else
-        echo Creating toolchain...
-        mkdir $toolchain_dir
-        python ${ndk_dir}/build/tools/make_standalone_toolchain.py \
-            --arch=${toolchain_arch} \
-            --api=${android_api} \
-            --install-dir=${toolchain_dir} \
-            --force
-        
-        if [ $? -ne 0 ]
-        then
-            rm -fr $toolchain_dir
-            exit_error
-        fi
-    fi
-    
-    export PATH=`pwd`/$toolchain_dir/bin:$PATH
+    toolchain_dir=$ndk_dir/toolchains/llvm/prebuilt/linux-x86_64
+    export sysroot=$toolchain_dir/sysroot
+    export PATH=$toolchain_dir/bin:$PATH
 
     target_host=i686-linux-android
-    export AR=$target_host-ar
-    export AS=$target_host-clang
-    export CC=$target_host-clang
-    export CXX=$target_host-clang++
+    target_host_with_api=$target_host$android_api
+    export AR=llvm-ar
+    export AS=$target_host_with_api-clang
+    export CC=$target_host_with_api-clang
+    export CXX=$target_host_with_api-clang++
     export LD=$target_host-ld
     export STRIP=$target_host-strip
     export RANLIB=$target_host-ranlib
     export STRIP=$target_host-strip
-    export CFLAGS="-static -O2 -fPIE -fPIC"
-    export LDFLAGS="-pie"
+    export CFLAGS="-static -O2 -fPIE -fPIC --sysroot=$sysroot"
+    export LDFLAGS="-pie --sysroot=$sysroot"
 }
 
 # download & untar libpcap + tcpdump
