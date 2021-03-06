@@ -1,2 +1,3 @@
 tcpdumpbuild*/**
+libpcap_all_targets/**
 venv/**
