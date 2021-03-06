@@ -3,7 +3,7 @@
 tcpdump_ver=4.9.2
 libpcap_ver=1.9.0
 android_api_def=23
-toolchain_arch=armv7a
+toolchain_arch=arm
 toolchain_dir=toolchain_armv7a
 
 #-------------------------------------------------------#
